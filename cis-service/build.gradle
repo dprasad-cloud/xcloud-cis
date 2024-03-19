@@ -1,0 +1,37 @@
+plugins {
+    id("jacoco")
+}
+
+configurations {
+    all {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    }
+}
+
+dependencies {
+    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.aop
+    implementation libs.spring.boot.starter.validation
+    implementation libs.mockito.inline
+
+}
+
+springBoot {
+    mainClass = 'com.extremecloud.cis.CisServiceApplication'
+    buildInfo()
+}
+
+jacocoTestReport { 
+    reports { 
+        xml.enabled = true
+        xml.destination = file("build/reports/jacoco/test/jacocoTestReport.xml")
+    } 
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, 
+                exclude: ['**/generated/**',
+                          '**/src/test/**'
+                ])
+        }))    
+    }
+}

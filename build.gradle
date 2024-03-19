@@ -1,0 +1,76 @@
+plugins {
+    id 'java'
+    id 'jvm-test-suite'
+    alias libs.plugins.spring.boot apply false
+    id 'com.github.node-gradle.node' version '3.5.1' apply false    
+    id "jacoco"    
+    alias libs.plugins.sonarqube
+}
+
+group = 'com.extremecloud.cis'
+sourceCompatibility = '17'
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+jar {
+    enabled = false
+}
+
+allprojects {
+    apply plugin: 'java-library'    
+
+    dependencies {
+        implementation platform(libs.spring.boot.dependencies)
+        annotationProcessor platform(libs.spring.boot.dependencies)
+        implementation 'org.springframework.boot:spring-boot-starter-security:2.7.5'
+
+        implementation libs.commons.lang3
+
+        compileOnly libs.lombok
+        annotationProcessor libs.lombok
+
+        testImplementation libs.junit
+        testRuntimeOnly libs.junit.engine
+    }
+
+    tasks.named('test') {
+        useJUnitPlatform()
+        testLogging {
+            events 'FAILED', 'SKIPPED', 'PASSED'
+        }
+        finalizedBy jacocoTestReport
+    }
+}
+
+configure(subprojects.findAll { it.name != 'cis-common' }) {
+    apply plugin: 'org.springframework.boot'    
+
+    dependencies {
+        implementation libs.spring.boot.starter.actuator
+        implementation libs.javax.annotation.api
+
+        annotationProcessor libs.spring.context.indexer
+
+        testImplementation libs.spring.boot.starter.test
+    }
+
+    tasks.named("bootJar") {
+        launchScript()
+    }    
+}
+
+
+sonarqube {
+    properties {
+        property "sonar.host.url", "https://sonarqube.iq.extremenetworks.com//"
+        property "sonar.login", "sqa_9a2b7a246a4677e0343f7b51f124adc3669c933f"
+        property "sonar.projectKey", "xcloud-cis"
+        property "sonar.projectName", "ExtremeCloud Common Integration Service"
+        property "sonar.java.coveragePlugin", "jacoco"        
+        property "sonar.exclusions", "**/generated/**,**/src/test/**"
+    }
+}

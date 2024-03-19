@@ -1,0 +1,28 @@
+spring:
+  profiles:
+    active: dev
+  security:
+    user:
+      name: admin
+      password: admin123
+
+server:
+  port: 9999
+  servlet:
+    context-path: /cis-service
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+
+grpc:
+  client:
+    GDC:
+      address: static://127.0.0.1:5099
+      enable-keep-alive: true
+      keep-alive-time: 120s
+      keep-alive-timeout: 30s
+      keep-alive-without-calls: true
+      negotiation-type: plaintext
